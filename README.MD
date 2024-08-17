@@ -33,6 +33,10 @@ After obtaining the Zora Armor, player can swim underwater with hero's clothes.
 * Oxygen Draining Adjustment
 * Green Rupees to Restore Oxygen
 
+| Twilight Princess                            | Skyward Sword                            |
+| ----------------------------------- | ----------------------------------- |
+| ![](https://github.com/Captainkittyca2/SS-StyleStamina/blob/master/ImagesAndGIFs/Swim.gif) | ![image](https://github.com/Captainkittyca2/SS-StyleStamina/blob/master/ImagesAndGIFs/swimS.gif) |
+
 ### Shield Durability
 The shield mechanics were adjusted to work more like Skyward Sword.
 
@@ -40,6 +44,9 @@ The shield mechanics were adjusted to work more like Skyward Sword.
 * Shield Durability
 * Wooden Shield Upgrade
 
+| Twilight Princess                            |
+| ----------------------------------- |
+| ![](https://github.com/Captainkittyca2/SS-StyleStamina/blob/master/ImagesAndGIFs/SailCloth.gif) |
 ### Sailcloth
 Take out a cucco while falling to prevent fall damage.
 
