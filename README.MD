@@ -44,11 +44,16 @@ The shield mechanics were adjusted to work more like Skyward Sword.
 * Shield Durability
 * Wooden Shield Upgrade
 
+| Twilight Princess                            | Skyward Sword                            |
+| ----------------------------------- | ----------------------------------- |
+| ![](https://github.com/Captainkittyca2/SS-StyleStamina/blob/master/ImagesAndGIFs/shieldParry.gif) | ![image](https://github.com/Captainkittyca2/SS-StyleStamina/blob/master/ImagesAndGIFs/shieldParryS.gif) |
+
+### Sailcloth
+Take out a cucco while falling to prevent fall damage.
+
 | Twilight Princess                            |
 | ----------------------------------- |
 | ![](https://github.com/Captainkittyca2/SS-StyleStamina/blob/master/ImagesAndGIFs/SailCloth.gif) |
-### Sailcloth
-Take out a cucco while falling to prevent fall damage.
 
 ### Object Storing
 This was inspired by the bomb-storing mechanic in Skyward Sword. Can store several grabbable objects including:
@@ -58,8 +63,16 @@ This was inspired by the bomb-storing mechanic in Skyward Sword. Can store sever
 * Cucco
 * Rocks
 
+| Twilight Princess                            | Skyward Sword                            |
+| ----------------------------------- | ----------------------------------- |
+| ![](https://github.com/Captainkittyca2/SS-StyleStamina/blob/master/ImagesAndGIFs/ItemStore.gif) | ![image](https://github.com/Captainkittyca2/SS-StyleStamina/blob/master/ImagesAndGIFs/itemStoreS.gif) |
+
 ### Shield Quick-Toggle
 Can toggle the currently equipped shield on/off.
+
+| Twilight Princess                            | Skyward Sword                            |
+| ----------------------------------- | ----------------------------------- |
+| ![](https://github.com/Captainkittyca2/SS-StyleStamina/blob/master/ImagesAndGIFs/shieldToggle.gif) | ![image](https://github.com/Captainkittyca2/SS-StyleStamina/blob/master/ImagesAndGIFs/shieldToggleS.gif) |
 
 ---
 This mod is powered by [libtp_rel](//github.com/zsrtp/libtp_rel) and licensed under [GPLv3](/LICENSE) | (C) [AECX](//github.com/AECX), [LunarSoap](//github.com/lunarsoap5), [Zephiles](//github.com/Zephiles), [kipcode66](//github.com/kipcode66)
