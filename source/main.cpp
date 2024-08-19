@@ -2,8 +2,8 @@
  * @file main.cpp
  * @author Captain Kitty Cat (youtube.com/@captainkittyca2)
  * @brief Features several mechanics from Skyward Sword.
- * @version 0.5
- * @date 2024-08-17
+ * @version 0.5.2
+ * @date 2024-08-19
  *
  * @copyright Copyright (c) 2024
  *
@@ -765,6 +765,7 @@ namespace mod
                         libtp::tp::d_a_alink::cutJumpVars.mBaseJumpSpeedH = libtp::tp::d_a_alink::cutJumpVars.mAirJumpSpeedH;
                         libtp::tp::d_a_alink::procCutJumpInit(linkActrPtr, 0);
                         libtp::tp::d_a_alink::cutJumpVars.mBaseJumpSpeedH = tempEquippp;
+                        anmCheck = libtp::tp::d_a_alink::ANM_ATN_COW;
                         return 0;
                         //libtp::tp::d_a_alink::modelDraw(linkActrPtr, linkActrPtr->mpSwMModel, 1);
                     }
@@ -2116,29 +2117,32 @@ namespace mod
     void Mod::oxygenAndStamina(libtp::tp::d_meter2::dMeter2_c* dMeterPtr) {
         bool draw_oxygen;
 #ifdef PLATFORM_WII
-        if (libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mShow2D && uiChecking && libtp::tp::d_bg_s_acch::ChkWaterIn(&libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mPlayer->mLinkAcch))
+        if (libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mShow2D)
 #else
-        if (libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygenShowFlag && uiChecking && libtp::tp::d_bg_s_acch::ChkWaterIn(&libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mPlayer->mLinkAcch)) //{
+        if (libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygenShowFlag) //{
 #endif
             /*if */ 
             {
-                swimPadddddddding--; 
-                if (swimPadddddddding == 0) {
-                    if (libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen > 0)
-                    {libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen -= 5; swimPadddddddding = 10;}
-                    else {
-                        libtp::tp::m_Do_Audio::mDoAud_seStart(0x4001C, 0, 0, 0);
-                        uint16_t healthGoodOrBad = libtp::tp::d_com_inf_game::dComIfG_gameInfo.save.save_file.player.player_status_a.currentHealth;
-                        if (healthGoodOrBad - 4 >= 0) healthGoodOrBad -= 4;
-                        else healthGoodOrBad = 0;
-                        libtp::tp::d_com_inf_game::dComIfG_gameInfo.save.save_file.player.player_status_a.currentHealth = healthGoodOrBad;
-                        swimPadddddddding = 45;
+                if (uiChecking && gameplayStatus && libtp::tp::d_bg_s_acch::ChkWaterIn(&libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mPlayer->mLinkAcch))
+                {
+                    swimPadddddddding--; 
+                    if (swimPadddddddding == 0) {
+                        if (libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen > 0)
+                        {libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen -= 5; swimPadddddddding = 10;}
+                        else {
+                            libtp::tp::m_Do_Audio::mDoAud_seStart(0x4001C, 0, 0, 0);
+                            uint16_t healthGoodOrBad = libtp::tp::d_com_inf_game::dComIfG_gameInfo.save.save_file.player.player_status_a.currentHealth;
+                            if (healthGoodOrBad - 4 >= 0) healthGoodOrBad -= 4;
+                            else healthGoodOrBad = 0;
+                            libtp::tp::d_com_inf_game::dComIfG_gameInfo.save.save_file.player.player_status_a.currentHealth = healthGoodOrBad;
+                            swimPadddddddding = 45;
+                        }
                     }
+                    dMeterPtr->mNowOxygen = libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen;
+                    libtp::tp::d_meter2_draw::drawOxygen(dMeterPtr->mpMeterDraw, dMeterPtr->mMaxOxygen, dMeterPtr->mNowOxygen, libtp::tp::d_meter_hio::g_drawHIO.mOxygenMeterPosX, libtp::tp::d_meter_hio::g_drawHIO.mOxygenMeterPosY);
+                    libtp::tp::d_meter2::alphaAnimeOxygen(dMeterPtr);
+                    return;
                 }
-                dMeterPtr->mNowOxygen = libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen;
-                libtp::tp::d_meter2_draw::drawOxygen(dMeterPtr->mpMeterDraw, dMeterPtr->mMaxOxygen, dMeterPtr->mNowOxygen, libtp::tp::d_meter_hio::g_drawHIO.mOxygenMeterPosX, libtp::tp::d_meter_hio::g_drawHIO.mOxygenMeterPosY);
-                libtp::tp::d_meter2::alphaAnimeOxygen(dMeterPtr);
-                return;
             }
         //}
         libtp::tp::d_a_alink::daAlink* actrReference = libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mPlayer;
