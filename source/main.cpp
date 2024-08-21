@@ -2,8 +2,8 @@
  * @file main.cpp
  * @author Captain Kitty Cat (youtube.com/@captainkittyca2)
  * @brief Features several mechanics from Skyward Sword.
- * @version 0.5.2
- * @date 2024-08-19
+ * @version 0.5.3
+ * @date 2024-08-20
  *
  * @copyright Copyright (c) 2024
  *
@@ -2113,6 +2113,7 @@ namespace mod
     //uint32_t tiredMoment = reinterpret_cast<uint32_t>(libtp::tp::d_a_alink::procTiredWait);
     uint8_t swimPadddddddding = 10;
     bool putAwayMoment = false;
+    bool underwaterCherryPicking = false;
 
     void Mod::oxygenAndStamina(libtp::tp::d_meter2::dMeter2_c* dMeterPtr) {
         bool draw_oxygen;
@@ -2145,6 +2146,7 @@ namespace mod
                         return;
                     }
                     else {
+                        underwaterCherryPicking = true;
                         draw_oxygen = true;
                         rollFuel = sprintFuel = false;
                     }
@@ -2246,38 +2248,41 @@ namespace mod
 #endif
         }
 
-        if (libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen < 0) {
-            libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen = 0;
-            timeMove = 30;
-            timeMoveStart = true;
-            outlineR = 0xAF;
-            outlineG = 0x22;
-            outlineB = 0;
-            outlineA = 100;
-            depleted = true;
-            //*reinterpret_cast<uint32_t*>(tiredMomentInit + tiredinitial) = tiredinitialVanilla;
-            //libtp::patch::writeBranch(tiredMoment + 0x38, tiredMoment + 0x3C);
-        }
-        if (uiChecking && !(dMeterPtr->mStatus & 0x40)) {
-            if (timeMoveStart) {
-                timeMove--;
-                if (timeMove == 0) {timeMoveStart = false; specialEffect = 0; specialEffectOn = true;}
-            } else if (libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen < libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mMaxOxygen && libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mPlayer->mProcID != 218 && libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mPlayer->mProcID != 219) {
+        if (!underwaterCherryPicking) {
+            if (libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen < 0) {
+                libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen = 0;
+                timeMove = 30;
+                timeMoveStart = true;
+                outlineR = 0xAF;
+                outlineG = 0x22;
+                outlineB = 0;
+                outlineA = 100;
+                depleted = true;
+                //*reinterpret_cast<uint32_t*>(tiredMomentInit + tiredinitial) = tiredinitialVanilla;
+                //libtp::patch::writeBranch(tiredMoment + 0x38, tiredMoment + 0x3C);
+            }
+            if (uiChecking && !(dMeterPtr->mStatus & 0x40)) {
+                if (timeMoveStart) {
+                    timeMove--;
+                    if (timeMove == 0) {timeMoveStart = false; specialEffect = 0; specialEffectOn = true;}
+                } else if (libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen < libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mMaxOxygen && libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mPlayer->mProcID != 218 && libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mPlayer->mProcID != 219) {
 #ifdef PLATFORM_WII
-                if (libtp::tp::m_re_controller_pad::mReCPd::m_pad[0].mButtonFlags & 0x2000 && !depleted) libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen += 3;
+                    if (libtp::tp::m_re_controller_pad::mReCPd::m_pad[0].mButtonFlags & 0x2000 && !depleted) libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen += 3;
 #else
-                if (libtp::tp::m_do_controller_pad::cpadInfo[0].mHoldLockL && !depleted) libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen += 3;
+                    if (libtp::tp::m_do_controller_pad::cpadInfo[0].mHoldLockL && !depleted) libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen += 3;
 #endif
-                else libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen += 5;
-                if (!depleted) tiredSounds(0);
-                if (libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen > libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mMaxOxygen) libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen = libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mMaxOxygen;
-            } else if (depleted) {
-                outlineR = 0; outlineB = 69;
-                depleted = false;
-                //*reinterpret_cast<uint32_t*>(tiredMomentInit + tiredinitial) = tiredinitialVanilla-1;
-                //*reinterpret_cast<uint32_t*>(tiredMoment + 0x38) = 0x41820014;
+                    else libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen += 5;
+                    if (!depleted) tiredSounds(0);
+                    if (libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen > libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mMaxOxygen) libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen = libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mMaxOxygen;
+                } else if (depleted) {
+                    outlineR = 0; outlineB = 69;
+                    depleted = false;
+                    //*reinterpret_cast<uint32_t*>(tiredMomentInit + tiredinitial) = tiredinitialVanilla-1;
+                    //*reinterpret_cast<uint32_t*>(tiredMoment + 0x38) = 0x41820014;
+                }
             }
         }
+
         if (dMeterPtr->field_0x248 != dMeterPtr->mMaxLife) {
             dMeterPtr->field_0x248 = dMeterPtr->mMaxLife;
             draw_oxygen = true;
@@ -2301,6 +2306,7 @@ namespace mod
         if (draw_oxygen == true) {
             dMeterPtr->mNowOxygen = libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen;
             libtp::tp::d_meter2_draw::drawOxygen(dMeterPtr->mpMeterDraw, dMeterPtr->mMaxOxygen, dMeterPtr->mNowOxygen, libtp::tp::d_meter_hio::g_drawHIO.mOxygenMeterPosX, libtp::tp::d_meter_hio::g_drawHIO.mOxygenMeterPosY);
+            if (underwaterCherryPicking) underwaterCherryPicking = false;
         }
         libtp::tp::d_meter2::alphaAnimeOxygen(dMeterPtr);
     }
