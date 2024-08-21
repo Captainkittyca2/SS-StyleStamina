@@ -2138,10 +2138,16 @@ namespace mod
                             swimPadddddddding = 45;
                         }
                     }
-                    dMeterPtr->mNowOxygen = libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen;
-                    libtp::tp::d_meter2_draw::drawOxygen(dMeterPtr->mpMeterDraw, dMeterPtr->mMaxOxygen, dMeterPtr->mNowOxygen, libtp::tp::d_meter_hio::g_drawHIO.mOxygenMeterPosX, libtp::tp::d_meter_hio::g_drawHIO.mOxygenMeterPosY);
-                    libtp::tp::d_meter2::alphaAnimeOxygen(dMeterPtr);
-                    return;
+                    if (!libtp::tp::d_a_player::checkEquipHeavyBoots(libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mPlayer)) {
+                        dMeterPtr->mNowOxygen = libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen;
+                        libtp::tp::d_meter2_draw::drawOxygen(dMeterPtr->mpMeterDraw, dMeterPtr->mMaxOxygen, dMeterPtr->mNowOxygen, libtp::tp::d_meter_hio::g_drawHIO.mOxygenMeterPosX, libtp::tp::d_meter_hio::g_drawHIO.mOxygenMeterPosY);
+                        libtp::tp::d_meter2::alphaAnimeOxygen(dMeterPtr);
+                        return;
+                    }
+                    else {
+                        draw_oxygen = true;
+                        rollFuel = sprintFuel = false;
+                    }
                 }
             }
         //}
