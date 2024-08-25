@@ -2,8 +2,8 @@
  * @file main.cpp
  * @author Captain Kitty Cat (youtube.com/@captainkittyca2)
  * @brief Features several mechanics from Skyward Sword.
- * @version 0.5.3
- * @date 2024-08-20
+ * @version 0.5.4
+ * @date 2024-08-24
  *
  * @copyright Copyright (c) 2024
  *
@@ -33,6 +33,7 @@
 #else
 #include <tp/m_do_controller_pad.h>
 #endif
+//#define ASM_BRANCH(length) (0x48000000 + (static_cast<uint32_t>(length) & 0x3FFFFFC))
 
 namespace mod
 {
@@ -254,6 +255,7 @@ namespace mod
     uint8_t timeMove = 0;
     uint8_t timeMoveStart = false;
     uint8_t armorTimer = 10;
+    bool depleted = false;
 
     // How much stamina to consume. Stamina consumption varies depending on the sword used. Also rupees are consumed when wearing a particular armor
     void staminaConsumption(uint16_t staminaVal, bool swordAttack, bool armorThing) {
@@ -270,18 +272,21 @@ namespace mod
         if (libtp::tp::d_a_alink::checkMagicArmorNoDamage(libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mPlayer))
 #endif
         {
-            if (armorThing) {
-                armorTimer--;
-                if (armorTimer == 0) {
-                    armorTimer = 10;
-                    if (libtp::tp::d_com_inf_game::dComIfG_gameInfo.save.save_file.player.player_status_a.currentRupees - staminaVal < 0) libtp::tp::d_com_inf_game::dComIfG_gameInfo.save.save_file.player.player_status_a.currentRupees = 0;
-                    else libtp::tp::d_com_inf_game::dComIfG_gameInfo.save.save_file.player.player_status_a.currentRupees -= staminaVal;
+            if (depleted) {
+                timeMove = 30; timeMoveStart = true;
+                if (armorThing) {
+                    armorTimer--;
+                    if (armorTimer == 0) {
+                        armorTimer = 10;
+                        if (libtp::tp::d_com_inf_game::dComIfG_gameInfo.save.save_file.player.player_status_a.currentRupees - staminaVal < 0) libtp::tp::d_com_inf_game::dComIfG_gameInfo.save.save_file.player.player_status_a.currentRupees = 0;
+                        else libtp::tp::d_com_inf_game::dComIfG_gameInfo.save.save_file.player.player_status_a.currentRupees -= staminaVal;
+                    }
+                } else {
+                    if (libtp::tp::d_com_inf_game::dComIfG_gameInfo.save.save_file.player.player_status_a.currentRupees - (staminaVal/5) < 0) libtp::tp::d_com_inf_game::dComIfG_gameInfo.save.save_file.player.player_status_a.currentRupees = 0;
+                    else libtp::tp::d_com_inf_game::dComIfG_gameInfo.save.save_file.player.player_status_a.currentRupees -= (staminaVal/5);
                 }
-            } else {
-                if (libtp::tp::d_com_inf_game::dComIfG_gameInfo.save.save_file.player.player_status_a.currentRupees - (staminaVal/5) < 0) libtp::tp::d_com_inf_game::dComIfG_gameInfo.save.save_file.player.player_status_a.currentRupees = 0;
-                else libtp::tp::d_com_inf_game::dComIfG_gameInfo.save.save_file.player.player_status_a.currentRupees -= (staminaVal/5);
+                return;
             }
-            return;
         }
         if (libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen < 151 && staminaVal > 1) staminaVal *= 0.5;
         libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen -= staminaVal;
@@ -428,7 +433,7 @@ namespace mod
     }
 
     //bool outlinePhase = false;
-    bool depleted = false;
+    bool depleted2 = false;
     //bool nearDepleteSwap = false;
     bool specialEffectOn = false;
     uint8_t nearDeplete = 0;
@@ -690,7 +695,7 @@ namespace mod
     uint8_t paddingForSword = 25;
 
     int32_t moveIt(libtp::tp::d_a_alink::daAlink* linkActrPtr) {
-        if (depleted) {
+        if (depleted2) {
             if (libtp::tp::d_a_player::checkEquipHeavyBoots(linkActrPtr)) {libtp::tp::d_a_alink::procWaitInit(linkActrPtr); return 0;}
 #ifdef PLATFORM_WII
             if (linkActrPtr->field_0x33d4 > 0.5f) linkActrPtr->field_0x33d4 = 0.0f;
@@ -707,12 +712,12 @@ namespace mod
             staminaConsumption(1, false, true);
             tiredSounds(1);
 #ifdef PLATFORM_WII
-            if (!depleted && libtp::tp::m_re_controller_pad::mReCPd::m_pad[0].mButtonFlags & 0x800 && libtp::tp::m_re_controller_pad::mReCPd::m_pad[0].stick_amplitude > 0.2f && linkActrPtr->mGrabItemAcKeep.mActor == NULL) {
+            if (!depleted2 && libtp::tp::m_re_controller_pad::mReCPd::m_pad[0].mButtonFlags & 0x800 && libtp::tp::m_re_controller_pad::mReCPd::m_pad[0].stick_amplitude > 0.2f && linkActrPtr->mGrabItemAcKeep.mActor == NULL) {
                 linkActrPtr->field_0x33d4 = 16.0f;
                 staminaConsumption(4, false, true);
             }
 #else
-            if (!depleted && libtp::tp::m_do_controller_pad::cpadInfo[0].mButtonFlags & 0x100 && libtp::tp::m_do_controller_pad::cpadInfo[0].mMainStickValue > 0.2f && linkActrPtr->mGrabItemAcKeep.mActor == NULL) {
+            if (!depleted2 && libtp::tp::m_do_controller_pad::cpadInfo[0].mButtonFlags & 0x100 && libtp::tp::m_do_controller_pad::cpadInfo[0].mMainStickValue > 0.2f && linkActrPtr->mGrabItemAcKeep.mActor == NULL) {
                 linkActrPtr->mNormalSpeed = 16.0f;
                 staminaConsumption(4, false, true);
             }
@@ -730,9 +735,9 @@ namespace mod
             }
 #endif
 #ifdef PLATFORM_WII
-        if (gameplayStatus && libtp::tp::m_re_controller_pad::mReCPd::m_pad[0].mButtonFlags & 0x800 && libtp::tp::m_re_controller_pad::mReCPd::m_pad[0].stick_amplitude > 0.2f && linkActrPtr->mGrabItemAcKeep.mActor == NULL && (linkActrPtr->field_0x33d4 >= 23.0f || (libtp::tp::d_a_player::checkEquipHeavyBoots(linkActrPtr) && linkActrPtr->field_0x33d4 >= 2.0f)))
+        if (gameplayStatus && !depleted2 && libtp::tp::m_re_controller_pad::mReCPd::m_pad[0].mButtonFlags & 0x800 && libtp::tp::m_re_controller_pad::mReCPd::m_pad[0].stick_amplitude > 0.2f && linkActrPtr->mGrabItemAcKeep.mActor == NULL && (linkActrPtr->field_0x33d4 >= 23.0f || (libtp::tp::d_a_player::checkEquipHeavyBoots(linkActrPtr) && linkActrPtr->field_0x33d4 >= 2.0f)))
 #else
-        if (gameplayStatus && libtp::tp::m_do_controller_pad::cpadInfo[0].mButtonFlags & 0x100 && libtp::tp::m_do_controller_pad::cpadInfo[0].mMainStickValue > 0.2f && linkActrPtr->mGrabItemAcKeep.mActor == NULL && (linkActrPtr->mNormalSpeed >= 23.0f || (libtp::tp::d_a_player::checkEquipHeavyBoots(linkActrPtr) && linkActrPtr->mNormalSpeed >= 2.0f)))
+        if (gameplayStatus && !depleted2 && libtp::tp::m_do_controller_pad::cpadInfo[0].mButtonFlags & 0x100 && libtp::tp::m_do_controller_pad::cpadInfo[0].mMainStickValue > 0.2f && linkActrPtr->mGrabItemAcKeep.mActor == NULL && (linkActrPtr->mNormalSpeed >= 23.0f || (libtp::tp::d_a_player::checkEquipHeavyBoots(linkActrPtr) && linkActrPtr->mNormalSpeed >= 2.0f)))
 #endif
             {
                 if (anmCheck != libtp::tp::d_a_alink::ANM_RUN_B) {
@@ -880,6 +885,18 @@ namespace mod
         uint32_t arrowShieldSomething = reinterpret_cast<uint32_t>(libtp::tp::d_a_alink::setArrowShieldActor);
         uint32_t guardSeOrSmthg = reinterpret_cast<uint32_t>(libtp::tp::d_a_alink::setGuardSe);
         uint32_t damageAct = reinterpret_cast<uint32_t>(libtp::tp::d_a_alink::checkDamageAction);
+        //uint32_t* enableCrashScreen = reinterpret_cast<uint32_t*>(0x8000B8A4);
+#ifdef TP_GUS
+        uint32_t* patchMessageCalculation = reinterpret_cast<uint32_t*>(0x80238F58);
+#elif defined TP_GEU
+        uint32_t* patchMessageCalculation = reinterpret_cast<uint32_t*>(0x802395D8);
+#elif defined TP_GJP
+        uint32_t* patchMessageCalculation = reinterpret_cast<uint32_t*>(0x802398E0);
+#elif defined TP_WUS2
+        uint32_t* patchMessageCalculation = reinterpret_cast<uint32_t*>(0x80226318);
+#elif defined TP_WJP
+        uint32_t* patchMessageCalculation = reinterpret_cast<uint32_t*>(0x802268b4);
+#endif
         //uint32_t linkSwim2 = reinterpret_cast<uint32_t>(libtp::tp::d_a_alink::checkSwimUpAction);
 #ifdef PLATFORM_WII
         libtp::patch::writeBranchBL(kanterapoggy + 0x190, colorOilMeter);
@@ -910,9 +927,10 @@ namespace mod
         *reinterpret_cast<uint32_t*>(arrowShieldSomething + 0x144) = 0x60000000;
         *reinterpret_cast<uint32_t*>(guardSeOrSmthg + 0x34) = 0x60000000;
         *reinterpret_cast<uint32_t*>(damageAct + 0x43C) = 0x3bc00000;
+        //*enableCrashScreen = ASM_BRANCH(0x14);
         //libtp::patch::writeBranch(linkSwim2 + 0x, linkSwim2 + 0x254)
 #endif
-
+        *patchMessageCalculation = 0x60000000;
         strcpy( sysConsolePtr->consoleLine[20].line, "Navigation: Press D-Pad Up or Down");
         strcpy( sysConsolePtr->consoleLine[21].line, "Select: Press A          Cancel: Press B");
         strcpy( sysConsolePtr->consoleLine[23].line, "youtube.com/@captainkittyca2");
@@ -1026,6 +1044,8 @@ namespace mod
             libtp::patch::hookFunction(libtp::tp::d_a_alink::procGuardAttackInit, [](libtp::tp::d_a_alink::daAlink* linkActrPtr) { return gMod->guardBattle(linkActrPtr);});
         return_crawlMovement =
             libtp::patch::hookFunction(libtp::tp::d_a_alink::procCrawlMove, [](libtp::tp::d_a_alink::daAlink* linkActrPtr) { return gMod->crawlMovementContinue(linkActrPtr);});
+        return_gameSceneChanged =
+            libtp::patch::hookFunction(libtp::tp::d_a_alink::changeGameScene, [](void* thingThing) { return gMod->gameSceneChanged(thingThing);});
         return_oxygenAndStamina =
             libtp::patch::hookFunction(libtp::tp::d_meter2::moveOxygen, [](libtp::tp::d_meter2::dMeter2_c* dMeter2Ptr) { return gMod->oxygenAndStamina(dMeter2Ptr);});
             libtp::patch::hookFunction(libtp::tp::d_a_alink::checkUpperGuardAnime, [](libtp::tp::d_a_alink::daAlink* linkActrPtr) { return gMod->upperGuardChecking(linkActrPtr);});
@@ -1046,6 +1066,7 @@ namespace mod
 
     int32_t Mod::mapInitialized(void* stageDt, libtp::tp::d_stage::stage_dzr_header_entry* i_data, int32_t num, void* raw_data) {
         depleted = false;
+        depleted2 = false;
         shieldAttack = false;
         gameplayStatus = false;
         dashPadding = 0;
@@ -1117,7 +1138,7 @@ namespace mod
     }
 
     bool Mod::meterExpiration(uint16_t item) {
-        if (depleted) {
+        if (depleted2) {
             if (item == 0x42 && libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mPlayer->mEquipItem == 0x42) {
                 libtp::tp::d_a_alink::itemUnequip(libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mPlayer, item, 1.0f);
                 return false;
@@ -1210,13 +1231,6 @@ namespace mod
     //bool swordUneqipMoment = false;
 
     int32_t Mod::executee(libtp::tp::d_a_alink::daAlink* linkActrPtr) {
-//#ifdef PLATFORM_WII
-        //sprintf(sysConsolePtr->consoleLine[0].line, "oxygenFlag: %d", libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mShow2D);
-        //sprintf(sysConsolePtr->consoleLine[7].line, "stickAngle: %f", libtp::tp::m_re_controller_pad::mReCPd::m_pad[0].stick_amplitude);
-//#else
-        //sprintf(sysConsolePtr->consoleLine[6].line, "speed: %f", linkActrPtr->mNormalSpeed);
-        //sprintf(sysConsolePtr->consoleLine[7].line, "stickAngle: %f", libtp::tp::m_do_controller_pad::cpadInfo[0].mMainStickValue);
-//#endif
         //sprintf(sysConsolePtr->consoleLine[8].line, "zoraArmor: %d", libtp::tp::d_com_inf_game::dComIfG_gameInfo.save.save_file.player.player_status_a.unk31[2]);
         //sprintf(sysConsolePtr->consoleLine[4].line, "mProcID: %d", linkActrPtr->mProcID);
         //if (linkActrPtr->mGrabItemAcKeep.mActor != NULL) {
@@ -1254,9 +1268,9 @@ namespace mod
         if (amoga) {
             if (libtp::tp::d_com_inf_game::dComIfG_gameInfo.save.save_file.player.player_status_a.equipment[2] == 0xff || (((linkActrPtr->mProcID > 9 || linkActrPtr->mProcID < 2) && (linkActrPtr->mProcID != 0x1e && linkActrPtr->mProcID != 0x1d && linkActrPtr->mProcID != 0x1f))/* && libtp::tp::d_a_player::checkNoResetFlg2(linkActrPtr, libtp::tp::d_a_player::FLG2_UNK_8000000) == 0*/)) {shieldAttack = false; shieldAttackReload = false; shieldReloading = 0;}
 #ifdef PLATFORM_WII
-            if (!depleted && (((linkActrPtr->mProcID >= 2 && linkActrPtr->mProcID <= 9) || linkActrPtr->mProcID == 0x1e || linkActrPtr->mProcID == 0x1d || linkActrPtr->mProcID == 0x1f))  && (libtp::tp::m_re_controller_pad::mReCPd::m_pad[0].nunchuck_shake > 0.4f) && (shieldAttack == false || shieldAttackReload == false) && linkActrPtr->mGrabItemAcKeep.mActor == NULL && libtp::tp::d_com_inf_game::dComIfG_gameInfo.save.save_file.player.player_status_a.equipment[2] != 0xff)
+            if (!depleted2 && (((linkActrPtr->mProcID >= 2 && linkActrPtr->mProcID <= 9) || linkActrPtr->mProcID == 0x1e || linkActrPtr->mProcID == 0x1d || linkActrPtr->mProcID == 0x1f))  && (libtp::tp::m_re_controller_pad::mReCPd::m_pad[0].nunchuck_shake > 0.4f) && (shieldAttack == false || shieldAttackReload == false) && linkActrPtr->mGrabItemAcKeep.mActor == NULL && libtp::tp::d_com_inf_game::dComIfG_gameInfo.save.save_file.player.player_status_a.equipment[2] != 0xff)
 #else
-            if (!depleted && (((linkActrPtr->mProcID >= 2 && linkActrPtr->mProcID <= 9) || linkActrPtr->mProcID == 0x1e || linkActrPtr->mProcID == 0x1d || linkActrPtr->mProcID == 0x1f))  && (libtp::tp::m_do_controller_pad::cpadInfo[0].mPressedButtonFlags & 0x20) && (shieldAttack == false || shieldAttackReload == false) && linkActrPtr->mGrabItemAcKeep.mActor == NULL && libtp::tp::d_com_inf_game::dComIfG_gameInfo.save.save_file.player.player_status_a.equipment[2] != 0xff)
+            if (!depleted2 && (((linkActrPtr->mProcID >= 2 && linkActrPtr->mProcID <= 9) || linkActrPtr->mProcID == 0x1e || linkActrPtr->mProcID == 0x1d || linkActrPtr->mProcID == 0x1f))  && (libtp::tp::m_do_controller_pad::cpadInfo[0].mPressedButtonFlags & 0x20) && (shieldAttack == false || shieldAttackReload == false) && linkActrPtr->mGrabItemAcKeep.mActor == NULL && libtp::tp::d_com_inf_game::dComIfG_gameInfo.save.save_file.player.player_status_a.equipment[2] != 0xff)
 #endif
             {
                 if (linkActrPtr->mEquipItem != 0x103) {
@@ -1291,7 +1305,7 @@ namespace mod
     }
 
     int32_t Mod::cutnormalInit(libtp::tp::d_a_alink::daAlink* linkActrPtr, int32_t parammm) {
-        if (depleted) return 0;
+        if (depleted2) return 0;
 #ifdef PLATFORM_WII
         if (libtp::tp::m_re_controller_pad::mReCPd::m_pad[0].nunchuck_shake > 0.2f && libtp::tp::m_re_controller_pad::mReCPd::m_pad[0].wiimote_shake > 0.2f) {
             shieldAttack = false; shieldAttackReload = false; shieldReloading = 0; RButtonPadding = 0; RButtonTime = false;
@@ -1304,7 +1318,7 @@ namespace mod
     }
 
     int32_t Mod::guardBattle(libtp::tp::d_a_alink::daAlink* linkActrPtr) {
-        if (guardBattleAuthorized && !depleted) {
+        if (guardBattleAuthorized && !depleted2) {
             guardBattleAuthorized = false;
             return return_guardBattle(linkActrPtr);
         }
@@ -1838,7 +1852,7 @@ namespace mod
     }
 
     int32_t Mod::cutSpinInit(libtp::tp::d_a_alink::daAlink* linkActrPtr, int32_t aa, int32_t bb) {
-        if (depleted) return 0;
+        if (depleted2) return 0;
 #ifdef PLATFORM_WII
         if (libtp::tp::m_re_controller_pad::mReCPd::m_pad[0].nunchuck_shake > 0.2f && libtp::tp::m_re_controller_pad::mReCPd::m_pad[0].wiimote_shake > 0.2f)
         {
@@ -1853,13 +1867,13 @@ namespace mod
     }
 
     int32_t Mod::cutSpinChargeInit(libtp::tp::d_a_alink::daAlink* linkActrPtr) {
-        if (depleted) return 0;
+        if (depleted2) return 0;
         linkActrPtr->mProcVar0.field_0x3008 = 14;
         return return_cutSpinChargeInit(linkActrPtr);
     }
 
     int32_t Mod::cutFinishInit(libtp::tp::d_a_alink::daAlink* linkActrPtr, int32_t cutOfType) {
-        if (depleted) return 0;
+        if (depleted2) return 0;
         if (linkActrPtr->mProcID == 0x21) return 0;
 
         const int32_t cutThecut = return_cutFinishInit(linkActrPtr, cutOfType);
@@ -1878,7 +1892,7 @@ namespace mod
     }
 
     int32_t Mod::cutLargeJumpChargeInit(libtp::tp::d_a_alink::daAlink* linkActrPtr) {
-        if (depleted) return 0;
+        if (depleted2) return 0;
         linkActrPtr->mProcVar0.field_0x3008 = 14;
         return return_cutLargeJumpChargeInit(linkActrPtr);
     }
@@ -1889,7 +1903,7 @@ namespace mod
     }
 
     int32_t Mod::cutJumpUpInit(libtp::tp::d_a_alink::daAlink* linkActrPtr) {
-        if (depleted || libtp::tp::d_com_inf_game::dComIfG_gameInfo.save.save_file.player.player_status_a.equipment[1] == 0xff) return 0;
+        if (depleted2 || libtp::tp::d_com_inf_game::dComIfG_gameInfo.save.save_file.player.player_status_a.equipment[1] == 0xff) return 0;
 
         const int32_t jumpingUpInit = return_cutJumpUpInit(linkActrPtr);
         if (jumpingUpInit) {
@@ -1906,7 +1920,7 @@ namespace mod
     }
 
     int32_t Mod::cutHeadInit(libtp::tp::d_a_alink::daAlink* linkActrPtr) {
-        if (depleted) return 0;
+        if (depleted2) return 0;
 
         const int32_t helmSplit = return_cutHeadInit(linkActrPtr);
 
@@ -1924,12 +1938,12 @@ namespace mod
     }
 
     int32_t Mod::sideSteppingInit(libtp::tp::d_a_alink::daAlink* linkActrPtr, int32_t aaaaaaaaaa) {
-        if (depleted) return 0;
+        if (depleted2) return 0;
         return return_sideStepInit(linkActrPtr, aaaaaaaaaa);
     }
 
     int32_t Mod::atnMoving(libtp::tp::d_a_alink::daAlink* linkActrPtr) {
-        if (depleted) {
+        if (depleted2) {
             if (libtp::tp::d_a_player::checkEquipHeavyBoots(linkActrPtr)) {libtp::tp::d_a_alink::procWaitInit(linkActrPtr); return 0;}
 #ifdef PLATFORM_WII
             if (linkActrPtr->field_0x33d4 > 0.5f) linkActrPtr->field_0x33d4 = 0.0f;
@@ -1950,12 +1964,12 @@ namespace mod
     }
 
     int32_t Mod::backJumpingInit(libtp::tp::d_a_alink::daAlink* linkActrPtr, int32_t smthgSmthg) {
-        if (depleted) return 0;
+        if (depleted2) return 0;
         return return_backJumpInit(linkActrPtr, smthgSmthg);
     }
 
     int32_t Mod::atnActrMve(libtp::tp::d_a_alink::daAlink* linkActrPtr) {
-        if (depleted) {
+        if (depleted2) {
 #ifdef PLATFORM_WII
             if (linkActrPtr->field_0x33d4 > 0.5f) linkActrPtr->field_0x33d4 = 0.5f;
 #else
@@ -1966,7 +1980,7 @@ namespace mod
     }
 
     int32_t Mod::returningTheIron(libtp::tp::d_a_alink::daAlink* linkActrPtr) {
-        if (libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen <= 0) {
+        if (libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen <= 0 && depleted2) {
             int32_t healthMii = libtp::tp::d_com_inf_game::dComIfG_gameInfo.save.save_file.player.player_status_a.currentHealth;
             if (healthMii - 8 < 0) healthMii = 0;
             else healthMii -= 8;
@@ -1988,27 +2002,27 @@ namespace mod
     }
 
     int32_t Mod::climbMoveUpDownInitialize(libtp::tp::d_a_alink::daAlink* linkActrPtr, int32_t smthgSmthg) {
-        if (depleted) {libtp::tp::d_a_alink::procFallInit(linkActrPtr, 2, 1.0f); return 0;}
+        if (depleted2) {libtp::tp::d_a_alink::procFallInit(linkActrPtr, 2, 1.0f); return 0;}
         return return_climbMoveUpDownInit(linkActrPtr, smthgSmthg);
     }
 
     int32_t Mod::climbMoveSideInitialize(libtp::tp::d_a_alink::daAlink* linkActrPtr) {
-        if (depleted) {libtp::tp::d_a_alink::procFallInit(linkActrPtr, 2, 1.0f); return 0;}
+        if (depleted2) {libtp::tp::d_a_alink::procFallInit(linkActrPtr, 2, 1.0f); return 0;}
         return return_climbMoveSideInit(linkActrPtr);
     }
 
     int32_t Mod::climbWait(libtp::tp::d_a_alink::daAlink* linkActrPtr) {
-        if (depleted) {libtp::tp::d_a_alink::procFallInit(linkActrPtr, 2, 1.0f); return 0;}
+        if (depleted2) {libtp::tp::d_a_alink::procFallInit(linkActrPtr, 2, 1.0f); return 0;}
         return return_climbWait(linkActrPtr);
     }
 
     int32_t Mod::climbUpStartInitialize(libtp::tp::d_a_alink::daAlink* linkActrPtr, int32_t smthgSmthg) {
-        if (depleted) return 0;
+        if (depleted2) return 0;
         return return_climbUpStartInit(linkActrPtr, smthgSmthg);
     }
 
     int32_t Mod::yoHangWait(libtp::tp::d_a_alink::daAlink* linkActrPtr) {
-        if (depleted) {libtp::tp::d_a_alink::procFallInit(linkActrPtr, 2, 1.0f); return 0;}
+        if (depleted2) {libtp::tp::d_a_alink::procFallInit(linkActrPtr, 2, 1.0f); return 0;}
         staminaConsumption(2, false, true);
         return return_hangWait(linkActrPtr);
     }
@@ -2017,7 +2031,7 @@ namespace mod
     bool buttonHolding2 = false;
 
     int32_t Mod::yoHangMove(libtp::tp::d_a_alink::daAlink* linkActrPtr) {
-        if (depleted) {libtp::tp::d_a_alink::procFallInit(linkActrPtr, 2, 1.0f); return 0;}
+        if (depleted2) {libtp::tp::d_a_alink::procFallInit(linkActrPtr, 2, 1.0f); return 0;}
 #ifdef PLATFORM_WII
         if (libtp::tp::m_re_controller_pad::mReCPd::m_pad[0].mButtonFlags & 0x4000)
 #else
@@ -2041,13 +2055,13 @@ namespace mod
     }
 
     int32_t Mod::yoHangFallStart(libtp::tp::d_a_alink::daAlink* linkActrPtr) {
-        if (depleted) {libtp::tp::d_a_alink::procFallInit(linkActrPtr, 2, 1.0f); return 0;}
+        if (depleted2) {libtp::tp::d_a_alink::procFallInit(linkActrPtr, 2, 1.0f); return 0;}
         staminaConsumption(2, false, false);
         return return_hangFallStart(linkActrPtr);
     }
 
     int32_t Mod::restCheckPlease(libtp::tp::d_a_alink::daAlink* linkActrPtr) {
-        if (depleted) return 1;
+        if (depleted2) return 1;
         return return_checkRestHP(linkActrPtr);
     }
 
@@ -2061,12 +2075,12 @@ namespace mod
     }
 
     int32_t Mod::grabReadyInitialized(libtp::tp::d_a_alink::daAlink* linkActrPtr) {
-        if (depleted) return 0;
+        if (depleted2) return 0;
         return return_grabReadyInit(linkActrPtr);
     }
 
     int32_t Mod::moveLadderPlease(libtp::tp::d_a_alink::daAlink* linkActrPtr) {
-        if (depleted) return 0;
+        if (depleted2) return 0;
 #ifdef PLATFORM_WII
         if (libtp::tp::m_re_controller_pad::mReCPd::m_pad[0].mButtonFlags & 0x4000)
 #else
@@ -2095,9 +2109,9 @@ namespace mod
 
     int32_t Mod::crawlMovementContinue(libtp::tp::d_a_alink::daAlink* linkActrPtr) {
 #ifdef PLATFORM_WII
-        if (libtp::tp::m_re_controller_pad::mReCPd::m_pad[0].mButtonFlags & 0x800 && !depleted)
+        if (libtp::tp::m_re_controller_pad::mReCPd::m_pad[0].mButtonFlags & 0x800 && !depleted2)
 #else
-        if (libtp::tp::m_do_controller_pad::cpadInfo[0].mButtonFlags & 0x100 && !depleted)
+        if (libtp::tp::m_do_controller_pad::cpadInfo[0].mButtonFlags & 0x100 && !depleted2)
 #endif
         {
             staminaConsumption(4, false, true);
@@ -2107,6 +2121,13 @@ namespace mod
             if (buttonHolding2) {buttonHolding2 = false; increaseClimbSpeed(false);}
         }
         return return_crawlMovement(linkActrPtr);
+    }
+
+    void Mod::gameSceneChanged(void* somethingSomething) {
+        if (strcmp(libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mNextStage.mStage, "F_SP108") == 0 && libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mNextStage.mPoint == 21 && libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mNextStage.mRoomNo == 1 && libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mNextStage.mLayer == 13) {
+            saveInfoPtr->objectStored = saveInfoPtr->objectParams = 0;
+        }
+        return return_gameSceneChanged(somethingSomething);
     }
 
     //uint32_t tiredMomentInit = reinterpret_cast<uint32_t>(libtp::tp::d_a_alink::procTiredWaitInit);
@@ -2258,6 +2279,12 @@ namespace mod
                 outlineB = 0;
                 outlineA = 100;
                 depleted = true;
+#ifdef PLATFORM_WII
+                if (!libtp::tp::d_a_alink::checkMagicArmorWearAbility(libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mPlayer) || libtp::tp::d_a_alink::checkMagicArmorHeavy(libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mPlayer))
+#else
+                if (!libtp::tp::d_a_alink::checkMagicArmorNoDamage(libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mPlayer))
+#endif
+                    depleted2 = true;
                 //*reinterpret_cast<uint32_t*>(tiredMomentInit + tiredinitial) = tiredinitialVanilla;
                 //libtp::patch::writeBranch(tiredMoment + 0x38, tiredMoment + 0x3C);
             }
@@ -2267,16 +2294,27 @@ namespace mod
                     if (timeMove == 0) {timeMoveStart = false; specialEffect = 0; specialEffectOn = true;}
                 } else if (libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen < libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mMaxOxygen && libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mPlayer->mProcID != 218 && libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mPlayer->mProcID != 219) {
 #ifdef PLATFORM_WII
-                    if (libtp::tp::m_re_controller_pad::mReCPd::m_pad[0].mButtonFlags & 0x2000 && !depleted) libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen += 3;
+                    if (libtp::tp::m_re_controller_pad::mReCPd::m_pad[0].mButtonFlags & 0x2000 && !depleted2) libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen += 3;
 #else
-                    if (libtp::tp::m_do_controller_pad::cpadInfo[0].mHoldLockL && !depleted) libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen += 3;
+                    if (libtp::tp::m_do_controller_pad::cpadInfo[0].mHoldLockL && !depleted2) libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen += 3;
 #endif
                     else libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen += 5;
-                    if (!depleted) tiredSounds(0);
+                    if (!depleted2) {
+#ifdef PLATFORM_WII
+                        if (!libtp::tp::d_a_alink::checkMagicArmorWearAbility(libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mPlayer) || libtp::tp::d_a_alink::checkMagicArmorHeavy(libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mPlayer))
+#else
+                        if (!libtp::tp::d_a_alink::checkMagicArmorNoDamage(libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mPlayer))
+#endif
+                        {
+                            if (depleted) depleted2 = true;
+                        }
+                        if (!depleted2) tiredSounds(0);
+                    }
                     if (libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen > libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mMaxOxygen) libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mOxygen = libtp::tp::d_com_inf_game::dComIfG_gameInfo.play.mMaxOxygen;
                 } else if (depleted) {
                     outlineR = 0; outlineB = 69;
                     depleted = false;
+                    depleted2 = false;
                     //*reinterpret_cast<uint32_t*>(tiredMomentInit + tiredinitial) = tiredinitialVanilla-1;
                     //*reinterpret_cast<uint32_t*>(tiredMoment + 0x38) = 0x41820014;
                 }
