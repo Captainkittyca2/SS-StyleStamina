@@ -2,8 +2,8 @@
  * @file main.h
  * @author Captain Kitty Cat (youtube.com/@captainkittyca2)
  * @brief
- * @version 0.5
- * @date 2024-08-17
+ * @version 0.5.4
+ * @date 2024-08-24
  *
  * @copyright Copyright (c) 2024
  *
@@ -42,6 +42,7 @@ namespace mod
         void ( *itemRent)() = nullptr;
         void ( *return_oxygenAndStamina)(libtp::tp::d_meter2::dMeter2_c* dMeter2Ptr) = nullptr;
         void ( *shieldEquipped)(uint8_t shieldID) = nullptr;
+        void ( *return_gameSceneChanged)(void*) = nullptr;
         int32_t ( *initMap)(void* stageDt, libtp::tp::d_stage::stage_dzr_header_entry* i_data, int32_t num, void* raw_data) = nullptr;
         int32_t ( *return_rollFront)(libtp::tp::d_a_alink::daAlink* linkActrPtr) = nullptr;
         int32_t ( *return_executee)(libtp::tp::d_a_alink::daAlink* linkActrPtr) = nullptr;
@@ -97,6 +98,7 @@ namespace mod
         void rentAnItem();
         void oxygenAndStamina(libtp::tp::d_meter2::dMeter2_c* dMeter2Ptr);
         void equippingTheShield(uint8_t);
+        void gameSceneChanged(void*);
         int32_t mapInitialized(void* stageDt, libtp::tp::d_stage::stage_dzr_header_entry* i_data, int32_t num, void* raw_data);
         int32_t rollFront(libtp::tp::d_a_alink::daAlink* linkActrPtr);
         int32_t executee(libtp::tp::d_a_alink::daAlink* linkActrPtr);
